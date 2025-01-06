@@ -3,7 +3,6 @@ package com.example.crud.controller;
 
 import com.example.crud.dto.AssignUserRequest;
 import com.example.crud.dto.UserBinding;
-import com.example.crud.entity.Books;
 import com.example.crud.exception.UserNotFoundException;
 import com.example.crud.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,11 +1,10 @@
 package com.example.crud.services;
 
 import com.example.crud.dto.UserBinding;
-import com.example.crud.entity.Books;
-import com.example.crud.entity.Users;
+import com.example.crud.entity.Book;
+import com.example.crud.entity.User;
 import com.example.crud.repository.BooksRepo;
 import com.example.crud.repository.UsersRepo;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -38,13 +37,13 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public boolean createUser(UserBinding userBinding) {
-        Users user = usersRepo.findByEmail(userBinding.getEmail());
+        User user = usersRepo.findByEmail(userBinding.getEmail());
 
         if(user != null){
             return false;
         }
 
-        Users newUser = new Users();
+        User newUser = new User();
         BeanUtils.copyProperties(userBinding, newUser);
 
 
@@ -58,25 +57,25 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public List<UserBinding> getAllUsers() {
-        List<Users> usersList = usersRepo.findAll();
-        log.info("Retrieved users: {}", usersList);
-        log.info("Retrieved {} users from the database.", usersList.size());
+        List<User> userList = usersRepo.findAll();
+        log.info("Retrieved users: {}", userList);
+        log.info("Retrieved {} users from the database.", userList.size());
 
-        return usersList.stream()
-                .map(users -> new UserBinding(
-                        users.getId(),
-                        users.getFirstName(),
-                        users.getMiddleName(),
-                        users.getLastName(),
-                        users.getUserName(),
-                        users.getEmail(),
+        return userList.stream()
+                .map(user -> new UserBinding(
+                        user.getId(),
+                        user.getFirstName(),
+                        user.getMiddleName(),
+                        user.getLastName(),
+                        user.getUserName(),
+                        user.getEmail(),
                         null // Exclude password for security reasons
                 )).toList();
     }
 
     @Override
     public UserBinding getUserById(Long id) {
-       Users user = usersRepo.findById(id).orElseThrow(()->
+       User user = usersRepo.findById(id).orElseThrow(()->
                new RuntimeException("User not found with id: "+id));
 
        return new UserBinding(
@@ -94,16 +93,16 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserBinding updateUser(Long id, UserBinding userBinding) {
 
-        Optional<Users> userDetails = usersRepo.findById(id);
+        Optional<User> userDetails = usersRepo.findById(id);
 
         if(userDetails.isPresent()){
-            Users existingUser = userDetails.get();
+            User existingUser = userDetails.get();
             BeanUtils.copyProperties(userBinding, existingUser);
 
             String hashedPassword = passwordEncoder.encode(userBinding.getPassword());
             existingUser.setPassword(hashedPassword);
 
-            Users updatedUser = usersRepo.save(existingUser);
+            User updatedUser = usersRepo.save(existingUser);
 
             return new UserBinding(
                     updatedUser.getId(),
@@ -123,7 +122,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void deleteUser(Long id) {
-        Optional<Users> userId = usersRepo.findById(id);
+        Optional<User> userId = usersRepo.findById(id);
 
         if(userId.isPresent()){
             usersRepo.delete(userId.get());
@@ -135,11 +134,11 @@ public class UserServiceImpl implements UserService{
 
     // Assign multiple users to a book
     public String assignUsersToBook(Long bookId, List<Long> userIds) {
-        Books book = booksRepo.findById(bookId)
+        Book book = booksRepo.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
         for (Long userId : userIds) {
-            Users user = usersRepo.findById(userId)
+            User user = usersRepo.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             book.getUsers().add(user);
             user.getBooks().add(book); // Ensure the relationship is bidirectional

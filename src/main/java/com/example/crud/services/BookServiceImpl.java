@@ -1,20 +1,13 @@
 package com.example.crud.services;
 
 import com.example.crud.dto.BookBinding;
-import com.example.crud.entity.Books;
+import com.example.crud.entity.Book;
 import com.example.crud.repository.BooksRepo;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Book;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,10 +19,10 @@ public class BookServiceImpl implements BookService{
 
     @Override
     public BookBinding createBook(BookBinding bookBinding) {
-        Books books = new Books();
-        BeanUtils.copyProperties(bookBinding, books);
+        Book book = new Book();
+        BeanUtils.copyProperties(bookBinding, book);
 
-        Books savedBook = booksRepo.save(books);
+        Book savedBook = booksRepo.save(book);
 
         BookBinding savedBookBinding = new BookBinding();
         BeanUtils.copyProperties(savedBook, savedBookBinding);
@@ -40,9 +33,9 @@ public class BookServiceImpl implements BookService{
 
     @Override
     public List<BookBinding> getAllBooks() {
-        List<Books> booksList = booksRepo.findAll();
+        List<Book> bookList = booksRepo.findAll();
 
-        return booksList.stream()
+        return bookList.stream()
                 .map(books -> new BookBinding(
                         books.getId(),
                         books.getBookName(),
@@ -57,7 +50,7 @@ public class BookServiceImpl implements BookService{
 
     @Override
     public List<BookBinding> getBookByParameter(String authorName, String bookGenre, String bookName) {
-        Specification<Books> specification = Specification.where(null);
+        Specification<Book> specification = Specification.where(null);
 
         if (authorName != null && !authorName.isEmpty()) {
             specification = specification.and((root, query, criteriaBuilder) ->
@@ -75,7 +68,7 @@ public class BookServiceImpl implements BookService{
             );
         }
 
-        List<Books> books = booksRepo.findAll(specification);
+        List<Book> books = booksRepo.findAll(specification);
 
         // Convert List<Book> to List<BookBinding>
         return books.stream()
